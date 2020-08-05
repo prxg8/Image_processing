@@ -40,17 +40,11 @@ plt.imshow(labels)
 plt.show()
 
 areas=[np.count_nonzero(labels==n)*pixel_area for n in np.unique(labels)]
-github add
-github commit-m" additional code, i am trying to find center of the regions then print their respective area there"
-M= cv2.moments(labels)
-cx=int(M['m10']/M['m00'])
-cy=int(M['m01']/M['m00'])
+plt.imshow(np.dstack([thresh,thresh,thresh]))
 
-center=(cx,cy)
-cv2.putText(img2,"A:{0:2.1f}".format(areas),center,
-            cv2.FONT_HERSHEY_COMPLEX_SMALL,1.3,(255,0,0),3)
-
-
+y,x=np.nonzero(thresh)
+xy=[y,x]
+plt.annotate(areas, xy)
 plt.show(areas)
 print(areas)
 

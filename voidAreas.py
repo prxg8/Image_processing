@@ -22,9 +22,7 @@ pixel_area=pixels_to_um**2 # compute the pixel area from the side length
 
 threshold=100 # might need to pick a value dynamically instead of just arbitrarily choosing a number
 
-#thresh = cv2.threshold(img, 200, 255, cv2.THRESH_BINARY) 
 thresh=img2.point(lambda p: p<threshold and 255) # switch to threshold in PIL
-#thresh.show()
 
 thresharr=np.array(thresh) # convert to a numpy array
 
@@ -34,19 +32,22 @@ thresharr=binary_erosion(thresharr,iterations=n_cycles) # this shrinks all the w
 thresharr=binary_dilation(thresharr,iterations=n_cycles*3) # expand objects to try to close up holes
 thresharr=binary_erosion(thresharr,iterations=n_cycles*2) # shrink back to the size you started with
 
-labels= measure.label(thresharr, neighbors=8, background=0) # label the areas
+labels= measure.label(thresharr, connectivity=2, background=0) # label the areas
 
-plt.imshow(labels)
-plt.show()
+regions=np.unique(labels)[1:]
+areas=[np.count_nonzero(labels==n)*pixel_area for n in regions] # area of each labeled, nonbackground reagion
 
-areas=[np.count_nonzero(labels==n)*pixel_area for n in np.unique(labels)]
-plt.imshow(np.dstack([thresh,thresh,thresh]))
+plt.imshow(labels) # start the plot
+centroids=[]
+for R in regions: # compute the centroid of each region
+	Rx,Ry=np.nonzero(labels==R) 
+	centroids.append((np.mean(Ry),np.mean(Rx))) # Y,X order because images are stupid
 
-y,x=np.nonzero(thresh)
-xy=[y,x]
-plt.annotate(areas, xy)
-plt.show(areas)
-print(areas)
+for i in range(len(regions)):
+	plt.annotate("{:3.2f}".format(areas[i]), centroids[i]) # add each annotation
+
+plt.show() #show the plot
 
 
-print(areas)
+
+#print(areas)

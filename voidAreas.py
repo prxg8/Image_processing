@@ -25,9 +25,9 @@ pixel_area=pixels_to_um**2 # compute the pixel area from the side length
 rng = np.random.RandomState(10)  # deterministic random data
 a = np.hstack((rng.normal(size=255),# here i took 255 considering the colors am not sure if its right 
                rng.normal(loc=10, scale=1, size=255)))
-Final= plt.hist(a, bins='100')  
+Final= plt.hist(a, bins=100)  
 plt.title("Histogram ")
-Text(0.5, 1.0, "Histogram with 'auto' bins")
+#Text(0.5, 1.0, "Histogram with 'auto' bins")
 plt.show()
 
 threshold=100 # might need to pick a value dynamically instead of just arbitrarily choosing a number

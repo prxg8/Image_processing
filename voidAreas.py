@@ -22,15 +22,11 @@ img2=img.convert('L') # make sure its greyscale
 pixels_to_um = 0.5
 pixel_area=pixels_to_um**2 # compute the pixel area from the side length
 
-rng = np.random.RandomState(10)  # deterministic random data
-a = np.hstack((rng.normal(size=255),# here i took 255 considering the colors am not sure if its right 
-               rng.normal(loc=10, scale=1, size=255)))
-Final= plt.hist(a, bins=100)  
-plt.title("Histogram ")
-#Text(0.5, 1.0, "Histogram with 'auto' bins")
-plt.show()
+np.histogram(img2, bins=256, range=[0,256], normed=None, weights=None, density=None)
 
-threshold=100 # might need to pick a value dynamically instead of just arbitrarily choosing a number
+threshold=np.histogram
+ # might need to pick a 
+
 
 thresh=img2.point(lambda p: p<threshold and 255) # switch to threshold in PIL
 

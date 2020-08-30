@@ -12,6 +12,7 @@ from matplotlib import pyplot as plt
 from scipy import ndimage
 from skimage import io, color, measure
 from scipy.ndimage import binary_dilation, binary_erosion
+import cv2 as cv
 
 
 img=Image.open(sys.argv[1]) # open the image

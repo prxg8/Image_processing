@@ -12,11 +12,16 @@ from matplotlib import pyplot as plt
 from scipy import ndimage
 from skimage import io, color, measure
 from scipy.ndimage import binary_dilation, binary_erosion
+import cv2 as cv
 
 
 img=Image.open(sys.argv[1]) # open the image
+
+
+
 img2=img.convert('L') # make sure its greyscale
 img2=img2.filter(ImageFilter.GaussianBlur(radius=10)) # blur radius to get rid of image scratches
+
 
 pixels_to_um = 0.5
 pixel_area=pixels_to_um**2 # compute the pixel area from the side length
@@ -28,7 +33,9 @@ valleys=np.nonzero(peaks_and_alleys==-1)[0]+2 # find where there's are valleys i
 threshold=(values[valleys[0]]+np.mean(img2))/2 # try the value of the first valley as our threshold
 print(threshold)
 
-edges = cv.Canny(img2,min,max_thresh=threshold,kernel=3)# min thresh, max thresh values given and size of kernel is (3,3)
+cvimg=cv.cvtColor(np.array(img2),cv.COLOR_GRAY2BGR) # convert image to opencv
+canny_edges = cv.Canny(cvimg,0,threshold)# min thresh, max thresh values given and size of kernel is (3,3)
+
 plt.imshow(edges,cmap = 'gray')
 
 thresh=img2.point(lambda p: p<threshold and 255) # switch to threshold in PIL
@@ -74,4 +81,4 @@ plt.show() #show the plot
 
 
 
-#print(areas)
+##print(areas)

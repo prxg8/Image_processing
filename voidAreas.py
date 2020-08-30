@@ -28,6 +28,8 @@ valleys=np.nonzero(peaks_and_alleys==-1)[0]+2 # find where there's are valleys i
 threshold=(values[valleys[0]]+np.mean(img2))/2 # try the value of the first valley as our threshold
 print(threshold)
 
+edges = cv.Canny(img2,min,max_thresh=threshold,kernel=3)# min thresh, max thresh values given and size of kernel is (3,3)
+plt.imshow(edges,cmap = 'gray')
 
 thresh=img2.point(lambda p: p<threshold and 255) # switch to threshold in PIL
 

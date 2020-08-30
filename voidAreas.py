@@ -36,7 +36,8 @@ print(threshold)
 cvimg=cv.cvtColor(np.array(img2),cv.COLOR_GRAY2BGR) # convert image to opencv
 canny_edges = cv.Canny(cvimg,0,threshold)# min thresh, max thresh values given and size of kernel is (3,3)
 
-plt.imshow(edges,cmap = 'gray')
+plt.imshow(canny_edges,cmap = 'gray')
+plt.show()
 
 thresh=img2.point(lambda p: p<threshold and 255) # switch to threshold in PIL
 

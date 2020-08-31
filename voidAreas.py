@@ -15,7 +15,7 @@ from scipy.ndimage import binary_dilation, binary_erosion
 import cv2 as cv
 
 
-img=Image.open(sys.argv[1]) # open the image
+img=cv.imread("location of image") # open the image
 
 
 

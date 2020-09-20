@@ -6,22 +6,19 @@ Created on Tue Jul 21 16:14:56 2020
 """
 
 import sys
-from PIL import Image, ImageFilter
+from PIL import Image , ImageEnhance
 import numpy as np
 from matplotlib import pyplot as plt
 from scipy import ndimage
 from skimage import io, color, measure
 from scipy.ndimage import binary_dilation, binary_erosion
-import cv2 as cv
+import skimage.segmentation
+from PIL import ImageFilter
 
 
-img=cv.imread("location of image") # open the image
-
-
-
-img2=img.convert('L') # make sure its greyscale
-img2=img2.filter(ImageFilter.GaussianBlur(radius=10)) # blur radius to get rid of image scratches
-
+img = Image.open (r"C:/Users/rpras/Desktop/missouri s n t/Image Analysis images/Questek/spec 3 10x -1.tiff")  # open the image
+img2 = img.convert('L')
+ # make sure its greyscale
 
 pixels_to_um = 0.5
 pixel_area=pixels_to_um**2 # compute the pixel area from the side length
@@ -33,13 +30,10 @@ valleys=np.nonzero(peaks_and_alleys==-1)[0]+2 # find where there's are valleys i
 threshold=(values[valleys[0]]+np.mean(img2))/2 # try the value of the first valley as our threshold
 print(threshold)
 
-cvimg=cv.cvtColor(np.array(img2),cv.COLOR_GRAY2BGR) # convert image to opencv
-canny_edges = cv.Canny(cvimg,0,threshold)# min thresh, max thresh values given and size of kernel is (3,3)
+img3 = img2.filter(ImageFilter.FIND_EDGES)
+img3.show()
 
-plt.imshow(canny_edges,cmap = 'gray')
-plt.show()
-
-thresh=img2.point(lambda p: p<threshold and 255) # switch to threshold in PIL
+thresh=img3.point(lambda p: p<threshold and 255) # switch to threshold in PIL
 
 thresharr=np.array(thresh) # convert to a numpy array
 
@@ -79,7 +73,3 @@ for i in range(len(regions)):
 	plt.annotate("{:3.2f}".format(areas[i]), centroids[i]) # add each annotation
 
 plt.show() #show the plot
-
-
-
-##print(areas)

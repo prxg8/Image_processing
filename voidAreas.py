@@ -14,6 +14,7 @@ from skimage import io, color, measure
 from scipy.ndimage import binary_dilation, binary_erosion
 import skimage.segmentation
 from PIL import ImageFilter
+import math
 
 
 #img = Image.open (r"C:/Users/rpras/Desktop/missouri s n t/Image Analysis images/Questek/spec 3 10x -1.tiff")  # open the image
@@ -30,6 +31,13 @@ valleys=np.nonzero(peaks_and_alleys==-1)[0]+2 # find where there's are valleys i
 
 threshold=(values[valleys[0]]+np.mean(img2))/2 # try the value of the first valley as our threshold
 print(threshold)
+erosion_img = img2.filter(ImageFilter.MinFilter(3)) # i saw you have already written a code for erosion but i wasn't sure which thresharr it would take into consideration
+erosion_img.show()
+
+perimeter= erosion_img-[1] # this shows a type error , i belive  that the image is an array and 1 is integer so i tried converting to array but it is  list
+perimeter.show()
+Roundness =   4A/(pi*Major Axis^2). #finding the roundness of image 
+print(Roundness)
 
 img3 = img2.filter(ImageFilter.FIND_EDGES)
 #img3.show()

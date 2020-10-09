@@ -16,11 +16,8 @@ import skimage.segmentation
 import math
 from PIL import ImageFilter
 
-
-img = Image.open (r"C:/Users/rpras/Desktop/missouri s n t/Image Analysis images/Questek/spec 3 10x -1.tiff")  # open the image
-img2 = img.convert('L')
- # make sure its greyscale
- 
+img=Image.open(sys.argv[1]) # open the image
+img2 = np.array(img.convert('L'))  # make sure its greyscale
 
 pixels_to_um = 0.5
 pixel_area=pixels_to_um**2 # compute the pixel area from the side length
@@ -31,13 +28,13 @@ def plot_spectrum(img2):
     plt.imshow(np.abs(img2), norm=LogNorm(vmin=5))
     plt.colorbar()
 
-plt.figure()
-plot_spectrum(img2)
-plt.title('Fourier transform')
+#plt.figure()
+#plot_spectrum(img2)
+#plt.title('Fourier transform')
 
 keep_fraction = 0.1
 
-r, c = img2.shape
+r, c = np.array(img2).shape 
 
 # r*(1-keep_fraction):
 img2[int(r*keep_fraction):int(r*(1-keep_fraction))] = 0
@@ -45,23 +42,23 @@ img2[int(r*keep_fraction):int(r*(1-keep_fraction))] = 0
 # Similarly with the columns:
 img2[:, int(c*keep_fraction):int(c*(1-keep_fraction))] = 0
 
-plt.figure()
-plot_spectrum(img2)
-plt.title('Filtered Spectrum')
+#plt.figure()
+#plot_spectrum(img2)
+#plt.title('Filtered Spectrum')
 # Reconstruct the denoised image from the filtered spectrum, keep only the
 # real part for display.
-img_new = fftpack.ifft(img2).real
+#img_new = fftpack.ifft(img2).real # import the library
 
-plt.figure()
-plt.imshow(img_new, plt.cm.gray)
-plt.title('Reconstructed Image')
+#plt.figure()
+#plt.imshow(img_new, plt.cm.gray)
+#plt.title('Reconstructed Image')
 
-from scipy import ndimage
+
 img_blur = ndimage.gaussian_filter(img2, 4)
 
-plt.figure()
-plt.imshow(img_blur, plt.cm.gray)
-plt.title('Blurred image')
+#plt.figure()
+#plt.imshow(img_blur, plt.cm.gray)
+#plt.title('Blurred image')
 
 plt.show()
 
@@ -72,13 +69,16 @@ valleys=np.nonzero(peaks_and_alleys==-1)[0]+2 # find where there's are valleys i
 threshold=(values[valleys[0]]+np.mean(img2))/2 # try the value of the first valley as our threshold
 print(threshold)
 
-img3 = img2.filter(ImageFilter.FIND_EDGES)
-img3.show()
+#img3 = img2.filter(ImageFilter.FIND_EDGES)
+#img3.show()
 
-thresh=img3.point(lambda p: p<threshold and 255) # switch to threshold in PIL
+thresh=np.zeros_like(np.array(img2))
+thresh[img2>threshold]=255
+
+#thresh=img2.point(lambda p: p<threshold and 255) # switch to threshold in PIL <------------ switch to threshold in np.array 
 
 thresharr=np.array(thresh) # convert to a numpy array
-erosion_img = img2.filter(ImageFilter.MinFilter(3))
+erosion_img = img2.filter(ImageFilter.MinFilter(3)) # PIL function on np array?
 erosion_img.show()
 
 perimeter= (erosion_img-1)
@@ -88,20 +88,38 @@ perimeter.show()
 n_cycles=2 # increase this for more "cleaning"
 
 edgeThresh=n_cycles*3
-edge=np.zeros_like(thresh) # mask for detecting if the region is on the edge
+edge=np.zeros_like(thresh) # mask for detecting if the region is on the edge of the image
 edge[:n_cycles,:]=1
 edge[-n_cycles:,:]=1
 edge[:,:n_cycles]=1
 edge[:,-n_cycles:]=1
 
+'''
+original data...maybe 1 void and some bits of noise
+OOOOOOOOOXXXXOXXXXXXOOOOOOOOOOOOOOOOOXOOOOOOOOOOOOOOOOXOOOOOXOOOOOOOOOOOOOO
 
+
+first erosion (-1=-1)
+OOOOOOOOOoXXoOoXXXXoOOOOOOOOOOOOOOOOOoOOOOOOOOOOOOOOOOoOOOOOoOOOOOOOOOOOOOO
+
+dilate (-1+1=0)
+OOOOOOOOOxXXxOxXXXXxOOOOOOOOOOOOOOOOOoOOOOOOOOOOOOOOOOoOOOOOoOOOOOOOOOOOOOO
+
+dilate (-1+1+1=1)
+OOOOOOOOxxXXxxxXXXXxxOOOOOOOOOOOOOOOOoOOOOOOOOOOOOOOOOoOOOOOoOOOOOOOOOOOOOO
+
+erode (-1+1+1-1=0)
+OOOOOOOOoxXXxxxXXXXxoOOOOOOOOOOOOOOOOoOOOOOOOOOOOOOOOOoOOOOOoOOOOOOOOOOOOOO
+'''
 thresharr=binary_erosion(thresharr,iterations=n_cycles) # this shrinks all the white objects.  tiny dots will go away
 thresharr=binary_dilation(thresharr,iterations=n_cycles*3) # expand objects to try to close up holes
 thresharr=binary_erosion(thresharr,iterations=n_cycles*2) # shrink back to the size you started with
 
 labels= measure.label(thresharr, connectivity=2, background=0) # label the areas
-edgeDetect=labels*edge
 
+
+# this attempts to throw away anything at the edge of the screen so we don't try to measure things that are hanging out of the image bounds
+edgeDetect=labels*edge
 testRegions=np.unique(labels)[1:]
 regions=[]
 for R in testRegions:
@@ -109,6 +127,18 @@ for R in testRegions:
 		regions.append(R)
 
 areas=[np.count_nonzero(labels==n)*pixel_area for n in regions] # area of each labeled, nonbackground reagion
+
+'''
+object labeled 1
+OOOOOOOOO11111111111OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+
+eroded object labeled 1
+OOOOOOOOOO111111111OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+
+(object labeled 1)-(eroded object labeled 1)
+OOOOOOOOO1OOOOOOOOO1OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+'''
+
 
 plt.imshow(labels) # start the plot
 centroids=[]

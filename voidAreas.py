@@ -15,6 +15,8 @@ from scipy.ndimage import binary_dilation, binary_erosion
 import skimage.segmentation
 import math
 from PIL import ImageFilter
+from matplotlib.colors import LogNorm
+from skimage.measure import label
 
 img=Image.open(sys.argv[1]) # open the image
 img2 = np.array(img.convert('L'))  # make sure its greyscale
@@ -23,7 +25,7 @@ pixels_to_um = 0.5
 pixel_area=pixels_to_um**2 # compute the pixel area from the side length
 
 def plot_spectrum(img2):
-    from matplotlib.colors import LogNorm
+   
     # A logarithmic colormap
     plt.imshow(np.abs(img2), norm=LogNorm(vmin=5))
     plt.colorbar()
@@ -78,11 +80,7 @@ thresh[img2>threshold]=255
 #thresh=img2.point(lambda p: p<threshold and 255) # switch to threshold in PIL <------------ switch to threshold in np.array 
 
 thresharr=np.array(thresh) # convert to a numpy array
-erosion_img = img2.filter(ImageFilter.MinFilter(3)) # PIL function on np array?
-erosion_img.show()
-
-perimeter= (erosion_img-1)
-perimeter.show()
+)
 
 # next I'm going to clean up the image a bit
 n_cycles=2 # increase this for more "cleaning"
@@ -118,6 +116,7 @@ thresharr=binary_erosion(thresharr,iterations=n_cycles*2) # shrink back to the s
 labels= measure.label(thresharr, connectivity=2, background=0) # label the areas
 
 
+
 # this attempts to throw away anything at the edge of the screen so we don't try to measure things that are hanging out of the image bounds
 edgeDetect=labels*edge
 testRegions=np.unique(labels)[1:]
@@ -127,6 +126,18 @@ for R in testRegions:
 		regions.append(R)
 
 areas=[np.count_nonzero(labels==n)*pixel_area for n in regions] # area of each labeled, nonbackground reagion
+
+
+binary_erosion(Grayscale_image, structure=None, iterations=1, mask=None, output=None, border_value=0, origin=0, brute_force=False) #eroding the image
+New_image= (binary_erosion-1)
+
+plt.show()
+
+for n<=labels;
+	perimeter(Grayscale_image, neighbourhood=4)#finding perimeter of all the pores 
+	
+	print(perimeter)
+circularity=np.array[areas/perimeter] #calculating the circularity 
 
 '''
 object labeled 1
@@ -141,12 +152,10 @@ OOOOOOOOO1OOOOOOOOO1OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 
 
 plt.imshow(labels) # start the plot
-centroids=[]
-for R in regions: # compute the centroid of each region
-	Rx,Ry=np.nonzero(labels==R) 
-	centroids.append((np.mean(Ry),np.mean(Rx))) # Y,X order because images are stupid
-
-for i in range(len(regions)):
-	plt.annotate("{:3.2f}".format(areas[i]), centroids[i]) # add each annotation
 
 plt.show() #show the plot
+
+
+
+ 
+

@@ -18,16 +18,16 @@ from PIL import ImageFilter
 from matplotlib.colors import LogNorm
 from skimage.measure import label
 
-img=Image.open(sys.argv[1]) # open the image
-img2 = np.array(img.convert('L'))  # make sure its greyscale
+Original_Image=Image.open(sys.argv[1]) # open the image
+Grayscale_Image = np.array(Original_Image.convert('L'))  # make sure its greyscale
 
 pixels_to_um = 0.5
 pixel_area=pixels_to_um**2 # compute the pixel area from the side length
 
-def plot_spectrum(img2):
+def plot_spectrum(Grayscale_Image):
    
     # A logarithmic colormap
-    plt.imshow(np.abs(img2), norm=LogNorm(vmin=5))
+    plt.imshow(np.abs(Grayscale_Image), norm=LogNorm(vmin=5))
     plt.colorbar()
 
 #plt.figure()
@@ -36,13 +36,13 @@ def plot_spectrum(img2):
 
 keep_fraction = 0.1
 
-r, c = np.array(img2).shape 
+r, c = np.array(Grayscale_Image).shape 
 
 # r*(1-keep_fraction):
-img2[int(r*keep_fraction):int(r*(1-keep_fraction))] = 0
+Grayscale_Image[int(r*keep_fraction):int(r*(1-keep_fraction))] = 0
 
 # Similarly with the columns:
-img2[:, int(c*keep_fraction):int(c*(1-keep_fraction))] = 0
+Grayscale_Image[:, int(c*keep_fraction):int(c*(1-keep_fraction))] = 0
 
 #plt.figure()
 #plot_spectrum(img2)
@@ -56,7 +56,7 @@ img2[:, int(c*keep_fraction):int(c*(1-keep_fraction))] = 0
 #plt.title('Reconstructed Image')
 
 
-img_blur = ndimage.gaussian_filter(img2, 4)
+img_blur = ndimage.gaussian_filter(Grayscale_Image, 4)
 
 #plt.figure()
 #plt.imshow(img_blur, plt.cm.gray)
@@ -64,18 +64,18 @@ img_blur = ndimage.gaussian_filter(img2, 4)
 
 plt.show()
 
-bins,values=np.histogram(img2, bins=50, range=[0,256], normed=None, weights=None, density=None) # store the histogram results
+bins,values=np.histogram(Grayscale_Image=[0,256], normed=None, weights=None, density=None) # store the histogram results
 peaks_and_alleys=np.sign(np.diff(np.sign(np.diff(bins)))) # find the peaks and valleys of the bins
 valleys=np.nonzero(peaks_and_alleys==-1)[0]+2 # find where there's are valleys in the histogram (I'm adding 2 because of the dimension change from using diff twice)
 
-threshold=(values[valleys[0]]+np.mean(img2))/2 # try the value of the first valley as our threshold
+threshold=(values[valleys[0]]+np.mean(Grayscale_Image))/2 # try the value of the first valley as our threshold
 print(threshold)
 
 #img3 = img2.filter(ImageFilter.FIND_EDGES)
 #img3.show()
 
-thresh=np.zeros_like(np.array(img2))
-thresh[img2>threshold]=255
+thresh=np.zeros_like(np.array(Grayscale_Image))
+thresh[Grayscale_Image>threshold]=255
 
 #thresh=img2.point(lambda p: p<threshold and 255) # switch to threshold in PIL <------------ switch to threshold in np.array 
 
@@ -113,6 +113,27 @@ thresharr=binary_erosion(thresharr,iterations=n_cycles) # this shrinks all the w
 thresharr=binary_dilation(thresharr,iterations=n_cycles*3) # expand objects to try to close up holes
 thresharr=binary_erosion(thresharr,iterations=n_cycles*2) # shrink back to the size you started with
 
+def circle_points(resolution, center, radius):   
+	"""
+    Generate points which define a circle on an image.Centre refers to the centre of the circle
+    """   
+    radians = np.linspace(0, 2*np.pi, resolution)    c = center[1] + radius*np.cos(radians)#polar co-ordinates 
+    r = center[0] + radius*np.sin(radians)
+    
+    return np.array([c, r]).T# Exclude last point because a closed path should not have duplicate points
+#calculates x and y co-ordinates of the points on the periphery of the circle
+fig, ax = image_show(Original_Image)
+snake = seg.active_contour(Grayscale_Image, points)fig, ax = image_show(Original_Image)
+ax.plot(points[:, 0], points[:, 1], '--r', lw=3)#The algorithm then segments particular part of an image by fitting  curve to the edges 
+ax.plot(snake[:, 0], snake[:, 1], '-b', lw=3);
+
+snake = seg.active_contour(Grayscale_Image, points,alpha=0.06,beta=0.3)fig, ax = image_show()
+ax.plot(points[:, 0], points[:, 1], '--r', lw=3)
+ax.plot(snake[:, 0], snake[:, 1], '-b', lw=3);
+
+
+
+
 labels= measure.label(thresharr, connectivity=2, background=0) # label the areas
 
 
@@ -133,13 +154,10 @@ New_image= (binary_erosion-1)
 
 plt.show()
 
-for n<=labels;
-	perimeter(Grayscale_image, neighbourhood=4)#finding perimeter of all the pores 
-	
-	print(perimeter)
-circularity=np.array[areas/perimeter] #calculating the circularity 
-
-'''
+image_segmented = seg.random_walker(Grayscale_Image,labels)
+fig, ax = image_show(image_gray)
+ax.imshow(image_segmented == 1, alpha=0.3);
+"""
 object labeled 1
 OOOOOOOOO11111111111OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 
